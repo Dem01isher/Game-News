@@ -58,7 +58,6 @@ class NewsFragment : Fragment(), SearchView.OnQueryTextListener {
                 binding.progressBar.visibility = View.GONE
             }
         }
-        viewModel.getNews()
     }
 
     override fun onQueryTextSubmit(p0: String?): Boolean {

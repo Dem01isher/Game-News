@@ -31,6 +31,10 @@ class NewsViewModel @Inject constructor(private val repository : RemoteDataSourc
         onError("Exception handler: ${throwable.localizedMessage}")
     }
 
+    init {
+        getNews()
+    }
+
     fun getNews(){
         job = CoroutineScope(Dispatchers.IO + exceptionHandler).launch {
             val response = repository.getNews()
