@@ -5,11 +5,10 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.SearchView
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
+import com.google.android.material.tabs.TabLayoutMediator
 import com.leskov.game_news.R
 import com.leskov.game_news.databinding.FragmentNewsBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class NewsFragment : Fragment(), SearchView.OnQueryTextListener {
@@ -18,8 +17,9 @@ class NewsFragment : Fragment(), SearchView.OnQueryTextListener {
 
     private val viewModel: NewsViewModel by viewModels()
 
-    private val adapter = NewsAdapter()
+//    private val adapter = NewsAdapter()
 
+    private val adapter = NewsAdapter()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,8 +30,11 @@ class NewsFragment : Fragment(), SearchView.OnQueryTextListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+//
+//        binding.list.adapter = adapter
 
         binding.list.adapter = adapter
+
 
         initObservers()
     }
@@ -43,16 +46,24 @@ class NewsFragment : Fragment(), SearchView.OnQueryTextListener {
         searchView.setOnQueryTextListener(this)
     }
 
-    private fun initObservers(){
-        viewModel.news.observe(viewLifecycleOwner){ news ->
+    private fun initObservers() {
+        viewModel.news.observe(viewLifecycleOwner) { news ->
             if (news.isNullOrEmpty()){
                 adapter.submitList(null)
             } else {
                 adapter.submitList(news)
             }
+//            TabLayoutMediator(binding.tabLayout, binding.pager){ tab, position ->
+//                val list : MutableList<String> = mutableListOf()
+//                news.map {
+//                    adapter.listOfTop.add(it.top)
+//                    list.add(it.type)
+//                    tab.text = "TAB $position"
+//                }
+//            }.attach()
         }
-        viewModel.loading.observe(viewLifecycleOwner){
-            if (it){
+        viewModel.loading.observe(viewLifecycleOwner) {
+            if (it) {
                 binding.progressBar.visibility = View.VISIBLE
             } else {
                 binding.progressBar.visibility = View.GONE

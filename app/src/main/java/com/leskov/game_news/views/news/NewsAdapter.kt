@@ -1,21 +1,24 @@
 package com.leskov.game_news.views.news
 
-import android.provider.Settings.Global.getString
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
+import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.leskov.game_news.R
 import com.leskov.game_news.databinding.ListItemNewsBinding
 import com.leskov.game_news.domain.response.NewsResponse
+import android.view.View
+import com.bumptech.glide.request.RequestOptions
+import android.graphics.Color
+import android.net.Uri
+import android.text.method.LinkMovementMethod
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.style.ClickableSpan
+import android.text.SpannableString
+
 
 /**
  *  Created by Android Studio on 8/17/2021 6:21 PM
@@ -25,27 +28,54 @@ import com.leskov.game_news.domain.response.NewsResponse
 class NewsAdapter : ListAdapter<NewsResponse, NewsAdapter.NewsViewHolder>(callback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder =
-        NewsViewHolder(ListItemNewsBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        NewsViewHolder(
+            ListItemNewsBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
 
-        val item = getItem(holder.adapterPosition)
+        val item = getItem(position)
 
         holder.binding.news = item
 
-        holder.binding.url.text = "${item.url} - ${item.time}"
+        val requestOptions = RequestOptions().placeholder(com.leskov.game_news.R.drawable.placeholder)
 
-        Glide.with(holder.itemView.context)
-            .load(item.img)
-            .centerCrop()
-            .into(holder.binding.image)
+        if (item.img.isNullOrEmpty()){
+            holder.binding.image.visibility = View.GONE
+        } else {
+            Glide.with(holder.itemView.context)
+                .load(item.img)
+                .apply(requestOptions)
+                .centerCrop()
+                .into(holder.binding.image)
+        }
 
+        holder.binding.url.setOnClickListener {
+            val ss = SpannableString(item.url)
+            val clickableSpan: ClickableSpan = object : ClickableSpan() {
+                override fun onClick(textView: View) {
+                    holder.itemView.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
+                }
 
+                override fun updateDrawState(ds: TextPaint) {
+                    super.updateDrawState(ds)
+                    ds.isUnderlineText = false
+                }
+            }
+            ss.setSpan(clickableSpan, 0, holder.binding.url.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
+            holder.binding.url.text = ss
+            holder.binding.url.movementMethod = LinkMovementMethod.getInstance()
+            holder.binding.url.highlightColor = Color.TRANSPARENT
+        }
     }
 
-    companion object{
-        val callback = object : DiffUtil.ItemCallback<NewsResponse>(){
+    companion object {
+        val callback = object : DiffUtil.ItemCallback<NewsResponse>() {
             override fun areItemsTheSame(oldItem: NewsResponse, newItem: NewsResponse): Boolean =
                 oldItem == newItem
 
@@ -55,5 +85,6 @@ class NewsAdapter : ListAdapter<NewsResponse, NewsAdapter.NewsViewHolder>(callba
         }
     }
 
-    inner class NewsViewHolder(val binding: ListItemNewsBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class NewsViewHolder(val binding: ListItemNewsBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }
